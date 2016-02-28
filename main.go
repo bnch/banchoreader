@@ -10,10 +10,31 @@ import (
 	"io"
 	"encoding/binary"
 	"github.com/fatih/color"
+	"github.com/codegangsta/cli"
 )
 
 func main() {
-	var writtenToStdin bool
+	app := cli.NewApp()
+	
+	app.Name = "banchoreader"
+	app.Version = "1.0.0"
+	app.Action = mainCommand
+	app.Usage = "read bancho packets in an elegant way"
+	app.ArgsUsage = "[files ...]"
+	app.Author = "Howl"
+	app.Flags = []cli.Flag{
+		cli.IntSliceFlag{
+			Name: "i",
+			Usage: "Packet IDs to ignore",
+		},
+	}
+	
+	app.Run(os.Args)
+}
+
+func mainCommand(c *cli.Context) {
+	ignored := c.IntSlice("i")
+	
 	stat, _ := os.Stdin.Stat()
 	if (stat.Mode() & os.ModeCharDevice) == 0 {
 		// Some stuff is being dumped in stdin
@@ -21,30 +42,21 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-		output("stdin", data)
-		writtenToStdin = true
+		output("stdin", data, ignored)
 	}
 
-	files := os.Args[1:]
-	if len(files) == 0 && !writtenToStdin {
-		fmt.Println(`Usage:
-	banchoreader [files...]
-	cat banchodump | banchoreader`)
-		return
-	}
-
+	files := c.Args()
 	for _, filename := range files {
 		data, err := ioutil.ReadFile(filename)
 		if err != nil {
 			fmt.Printf("Could not read %s: %s\n", filename, err)
 			continue
 		}
-
-		output(filename, data)
+		output(filename, data, ignored)
 	}
 }
 
-func output(filename string, contents []byte) {
+func output(filename string, contents []byte, ignored []int) {
 	green := color.New(color.Bold, color.FgGreen)
 	yellow := color.New(color.FgYellow)
 	blue := color.New(color.FgBlue)
@@ -55,6 +67,9 @@ func output(filename string, contents []byte) {
 	fmt.Printf("Read %d packets.\n", len(packets))
 
 	for _, packet := range packets {
+		if intInSlice(int(packet.ID), ignored) {
+			continue
+		}
 		blue.Printf("  %s (%d)", pid.String(packet.ID), packet.ID)
 		switch len(packet.Content) {
 		case 1:
@@ -113,3 +128,13 @@ func safeString(s []byte) string {
 	}
 	return ret
 }
+
+func intInSlice(a int, list []int) bool {
+    for _, b := range list {
+        if b == a {
+            return true
+        }
+    }
+    return false
+}
+
