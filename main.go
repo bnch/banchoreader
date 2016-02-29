@@ -60,7 +60,7 @@ func output(filename string, contents []byte, ignored []int) {
 	yellow.Printf("Reading file '%s'... ", filename)
 	packets, err := banchoreader.ReadPackets(contents)
 	if err != nil {
-		red.Printf("Could not read '%s': %s", filename, err)
+		red.Printf("Could not read '%s': %s\n", filename, err)
 		return
 	}
 	green.Print("done. ")
