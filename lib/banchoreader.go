@@ -1,19 +1,19 @@
 package banchoreader
 
 import (
-	"github.com/bnch/bancho/inbound"
 	"bytes"
-	"io"
-	"github.com/bnch/bancho/pid"
 	"encoding/binary"
-	"github.com/fatih/color"
 	"fmt"
+	"github.com/bnch/bancho/inbound"
+	"github.com/bnch/bancho/pid"
+	"github.com/fatih/color"
+	"io"
 )
 
 // Dumper is a container of settings of banchoreader, and is used to call the methods of banchoreader.
 type Dumper struct {
-	Ignored []int
-	Colored bool
+	Ignored         []int
+	Colored         bool
 	IndentationSize int
 }
 
@@ -29,7 +29,7 @@ func (d Dumper) Dump(file io.Writer, rawPackets []byte) error {
 	if err != nil {
 		return err
 	}
-	
+
 	return d.DumpPackets(file, packets)
 }
 
@@ -46,21 +46,21 @@ func (d Dumper) DumpPackets(file io.Writer, packets []inbound.BasePacket) error 
 
 // DumpPacket prints out to a certain file the human readable version of a inbound.BasePacket.
 func (d Dumper) DumpPacket(file io.Writer, packet inbound.BasePacket) error {
-		if intInSlice(int(packet.ID), d.Ignored) {
-			return nil
-		}
-		d.p(file, blue, "%s%s (%d)", d.indent(1), pid.String(packet.ID), packet.ID)
-		switch len(packet.Content) {
-		case 1:
-			d.p(file, yellow, " (possible byte: %d)", packet.Content[0])
-		case 4:
-			var out int32
-			binary.Read(bytes.NewReader(packet.Content), binary.LittleEndian, &out)
-			d.p(file, yellow, " (possible int32: %d)", out)
-		}
-		d.p(file, def, "\n")
-		d.hexdump(file, packet.Content)
+	if intInSlice(int(packet.ID), d.Ignored) {
 		return nil
+	}
+	d.p(file, blue, "%s%s (%d)", d.indent(1), pid.String(packet.ID), packet.ID)
+	switch len(packet.Content) {
+	case 1:
+		d.p(file, yellow, " (possible byte: %d)", packet.Content[0])
+	case 4:
+		var out int32
+		binary.Read(bytes.NewReader(packet.Content), binary.LittleEndian, &out)
+		d.p(file, yellow, " (possible int32: %d)", out)
+	}
+	d.p(file, def, "\n")
+	d.hexdump(file, packet.Content)
+	return nil
 }
 
 func (d Dumper) hexdump(file io.Writer, s []byte) {
@@ -84,7 +84,7 @@ func (d Dumper) indent(multiply int) string {
 		base = 2
 	}
 	spaces := base * multiply
-	
+
 	var ret string
 	for i := 0; i < spaces; i++ {
 		ret += " "
@@ -110,12 +110,12 @@ func ReadPackets(b []byte) ([]inbound.BasePacket, error) {
 	}
 }
 func intInSlice(a int, list []int) bool {
-    for _, b := range list {
-        if b == a {
-            return true
-        }
-    }
-    return false
+	for _, b := range list {
+		if b == a {
+			return true
+		}
+	}
+	return false
 }
 func safeString(s []byte) string {
 	var ret string
