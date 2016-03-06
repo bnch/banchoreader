@@ -4,10 +4,11 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	"io"
+
 	"github.com/bnch/bancho/inbound"
 	"github.com/bnch/bancho/pid"
 	"github.com/fatih/color"
-	"io"
 )
 
 // Dumper is a container of settings of banchoreader, and is used to call the methods of banchoreader.
