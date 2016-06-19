@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
+	"os"
+
 	"github.com/bnch/banchoreader/lib"
 	"github.com/codegangsta/cli"
 	"github.com/fatih/color"
-	"io/ioutil"
-	"os"
 )
 
 func main() {
@@ -46,7 +47,7 @@ func mainCommand(c *cli.Context) {
 		data, err := ioutil.ReadFile(filename)
 		if err != nil {
 			fmt.Printf("Could not read %s: %s\n", filename, err)
-			continue
+			//continue
 		}
 		output(filename, data, ignored)
 	}
@@ -60,10 +61,10 @@ func output(filename string, contents []byte, ignored []int) {
 	yellow.Printf("Reading file '%s'... ", filename)
 	packets, err := banchoreader.ReadPackets(contents)
 	if err != nil {
-		red.Printf("Could not read '%s': %s\n", filename, err)
-		return
+		red.Printf("Could not completely read '%s': %s\n", filename, err)
+	} else {
+		green.Print("done successfully. ")
 	}
-	green.Print("done. ")
 	fmt.Printf("Read %d packets.\n", len(packets))
 
 	r := banchoreader.New()
